@@ -1,0 +1,58 @@
+---
+#version 0.92
+- hosts: local
+  become: yes
+  become_user: root
+  vars:
+    script_path: /etc/microserver/microserverUptime.sh
+    service_path: /etc/systemd/system/microserverUptime.service
+
+  tasks:
+  - name: stop and disable service
+    systemd:
+      name: microserverUptime
+      state: stopped
+      enabled: no
+
+  - name: Remove the systemd service
+    file:
+      path: "{{ service_path }}"
+      state: absent
+
+  - name: Remove the script file
+    file:
+      path: "{{ script_path }}"
+      state: absent
+      
+  - name: Remove the encrypted status file
+    file:
+      path: /etc/myEncryptedServiceStatus
+      state: absent
+   
+   
+  - name: Stop service
+    systemd:
+      name: microserver
+      state: stopped
+
+  - name: Disable service
+    systemd:
+      name: microserver
+      enabled: false
+      daemon_reload: yes
+
+  - name: Remove service file
+    file:
+      path: "/etc/systemd/system/microserver.service"
+      state: absent
+
+  - name: Remove script
+    file:
+      path: "/etc/microserver/microserverUptime.sh"
+      state: absent
+
+  - name: Remove directory
+    file:
+      path: "/etc/microserver"
+      state: absent
+...

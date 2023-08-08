@@ -1,0 +1,89 @@
+---
+- hosts: local
+  become: true
+  vars: 
+    script_path: /etc/microserver/microserverUptime.sh 
+    service_path: /etc/systemd/system/microserverUptime.service
+
+  tasks:
+    - name: Create the /etc/microserver directory if it doesn't exist 
+      file: 
+        path: /etc/microserver 
+        state: directory 
+        mode: '0755'
+
+    - name: Create the microserverUptime.sh script 
+      copy:
+        dest: "{{ script_path }}" 
+        mode: '0755' 
+        content: |
+          #!/bin/bash 
+          _days=0 
+          _pwd=$(awk '/Serial/ {print $3}' /proc/cpuinfo)
+          if [ -f /etc/microserver/myEncryptedServiceStatus ] 
+          then 
+            _days=$(sudo sh -c 'cat /etc/microserver/myEncryptedServiceStatus | openssl enc -aes-256-cbc -d -a -pbkdf2 -iter 100000 -pass pass:$_pwd')
+          fi 
+
+          for i in "$@"
+          do
+            case $i in
+              -v)
+                echo "0.92"
+                exit
+              ;;
+              -l)
+                echo "$_days days"
+                exit
+              ;;
+            esac
+          done 
+
+          _systemctlStatus=$(systemctl is-active nginx || systemctl is-active apache2) 
+          if [ "$_systemctlStatus" = "active" ] 
+          then ((_days++))
+          else ((_days=0)) 
+          fi 
+          echo $_days | sudo sh -c 'openssl enc -aes-256-cbc -a -pbkdf2 -iter 100000 -pass pass:$_pwd > /etc/microserver/myEncryptedServiceStatus' 
+          if [ $_days -gt 0 ] 
+          then (crontab -l 2>/dev/null | grep -v -F "microserverUptime.sh" ; echo "0 0 * * * {{ script_path }}") | crontab - 
+          crontab -l | grep -v -F "* * * * *" | crontab - 
+          systemctl restart cron 
+          fi
+
+    - name: Create a hourly cronjob 
+      cron: 
+        name: "Check every hour if nginx or apache2 is running" 
+        minute: "0" 
+        job: "{{ script_path }}" 
+
+    - name: Executes the script firstly 
+      command: "{{ script_path }}"
+
+    - name: Create service file
+      copy:
+        dest: "/etc/systemd/system/microserver.service"
+        content: |
+          [Unit]
+          Description=Microserver Uptime Status
+
+          [Service]
+          ExecStart=/etc/microserver/microserverUptime.sh -l
+
+          [Install]
+          WantedBy=multi-user.target
+      notify: reload systemd
+
+    - name: Enable service to start on boot
+      systemd:
+        name: microserver
+        enabled: yes
+
+    - name: Start service
+      systemd:
+        name: microserver
+        state: started
+
+  handlers:
+    - name: reload systemd
+      command: systemctl daemon-reload
