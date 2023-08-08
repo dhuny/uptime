@@ -2,7 +2,7 @@
 
 Microserver Uptime is a concise bash script specifically designed to operate on Linux/Unix servers. It counts the number of days a Web Server has been operational. This script is tailor-made for Single Board Computers (SBCs) including Raspberry Pi, Rock Pi, and Orange Pi.The purpose of Uptime is to record number of days a microserver hardware can run a webserver during its lifetime. 
 
-These SBCs are recognized for their cost-effectiveness and their ability as powerful microserver hardware systems that perform excellently as Web Servers. They can host various websites and operate for a prolonged duration with minimal upkeep. A recent study by ([Dhuny et al., 2022])(https://www.sciencedirect.com/science/article/pii/S2590005622000479) highlighted their ability to support up to 40 concurrent users.
+These SBCs are recognized for their cost-effectiveness and their ability as powerful microserver hardware systems that perform excellently as Web Servers. They can host various websites and operate for a prolonged duration with minimal upkeep. A recent study by [(Dhuny et al., 2022)](https://www.sciencedirect.com/science/article/pii/S2590005622000479) highlighted their ability to support up to 40 concurrent users.
 
 These units offer ideal solutions for edge computing, can be installed on-premises or utilized as home-hosting solutions. They require negligible cooling and consume minimal power.
 
