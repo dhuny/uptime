@@ -60,7 +60,7 @@ sudo service microserver status
 To display the version number of uptime
 
 ```bash
-sudo /etc/microserver/microserver.sh -v
+sudo /etc/microserver/microserverUptime.sh -v
 ```
 
 ## Uninstalling Microserver Uptime
